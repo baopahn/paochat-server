@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "ENVIRONMENT=DEV nodemon ./bin/www"
   },
   "dependencies": {
     "axios": "^0.21.1",

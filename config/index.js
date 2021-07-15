@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost:3000";
+const devEnv = process.env.ENVIRONMENT === "DEV";
+
+const BASE_URL = devEnv ? "http://localhost:3000" : process.env.BASE_URL;
 const JWT_TOKEN = "paochat";
 const JWT_REFRESH_TOKEN = "paochatrefresh";
 const TIME_EXPIRED = "4h";
