@@ -20,6 +20,7 @@ class ChatController {
     );
 
     roomDB.lastMessage = newMess._id;
+    roomDB.updatedAt = newMess.createdAt;
     await utilTry(
       Promise.all([newMess.save(), roomDB.save()]),
       "CHAT_CONTROLLER"
