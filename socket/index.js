@@ -1,6 +1,6 @@
 const socketIO = require("socket.io");
 const { checkAuthSocket, unlockSocket, lockSocket, log } = require("./utils");
-const { BASE_URL } = require("../config");
+const { BASE_URL_CLIENT } = require("../config");
 const { configEventListener } = require("./eventListener");
 const userController = require("./userController");
 const chatController = require("./chatController");
@@ -15,7 +15,7 @@ const configSocket = (server) => {
 
   io = socketIO(server, {
     cors: true,
-    origins: [`${BASE_URL}`],
+    origins: [`${BASE_URL_CLIENT}`],
   });
 
   userController.setIO(io);

@@ -1,6 +1,8 @@
 const devEnv = process.env.ENVIRONMENT === "DEV";
 
-const BASE_URL = devEnv ? "http://localhost:3000" : process.env.BASE_URL;
+const BASE_URL_CLIENT = devEnv
+  ? "http://localhost:3001"
+  : process.env.BASE_URL_CLIENT;
 const JWT_TOKEN = "paochat";
 const JWT_REFRESH_TOKEN = "paochatrefresh";
 const TIME_EXPIRED = "4h";
@@ -19,5 +21,5 @@ module.exports = {
   MONGO_DB_URL,
   GG_GET_USER,
   MAX_MESSAGE,
-  BASE_URL,
+  BASE_URL_CLIENT,
 };
