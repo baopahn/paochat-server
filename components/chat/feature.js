@@ -61,15 +61,18 @@ const getHistoryMessage = async (id, myID, page) => {
   let length = 0;
   for (messRaw of listMessageRaw) {
     const mess = messRaw.toObject();
+    const { message, type, read } = mess;
     const isSender = mess.sender._id == myID;
     mess.isSender = isSender;
     delete mess.sender;
     delete mess.receiver;
+    delete mess.type;
+    delete mess.read;
 
     if (length > 0 && mess.isSender === listMessageShort[length - 1].isSender) {
-      listMessageShort[length - 1].message.push(mess.message);
+      listMessageShort[length - 1].message.push({ type, message, read });
     } else {
-      listMessageShort.push({ ...mess, message: [mess.message] });
+      listMessageShort.push({ ...mess, message: [{ type, message, read }] });
       length++;
     }
   }

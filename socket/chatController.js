@@ -1,7 +1,11 @@
 const utilTry = require("../utils/utilTry");
 const { messageModel, roomModel } = require("../database");
 const userController = require("./userController");
-const { RECEIVE_MESS, RECEIVE_TYPING } = require("./events");
+const {
+  RECEIVE_MESS,
+  RECEIVE_TYPING,
+  RECEIVE_READ_ALL_MESS,
+} = require("./events");
 
 class ChatController {
   constructor() {
@@ -12,8 +16,14 @@ class ChatController {
     this._io = io;
   }
 
-  async sendMess({ room, sender, receiver, message }) {
-    const newMess = new messageModel({ room, sender, receiver, message });
+  async sendMess({ room, sender, receiver, message, idLocal }) {
+    const newMess = new messageModel({
+      room,
+      sender,
+      receiver,
+      message,
+      read: false,
+    });
     const roomDB = await utilTry(
       roomModel.findOne({ _id: room }),
       "CHAT_CONTROLLER"
@@ -31,8 +41,9 @@ class ChatController {
       socket.emit(RECEIVE_MESS, {
         room,
         isSender: false,
-        message,
+        message: { message, type: "text" },
         createdAt: newMess.createdAt,
+        idLocal,
       })
     );
 
@@ -41,8 +52,9 @@ class ChatController {
       socket.emit(RECEIVE_MESS, {
         room,
         isSender: true,
-        message,
+        message: { message, type: "text" },
         createdAt: newMess.createdAt,
+        idLocal,
       })
     );
 
@@ -56,6 +68,18 @@ class ChatController {
         room,
         status,
       })
+    );
+  }
+
+  async readAllMess({ room, receiver }) {
+    const receiverSockets = userController.getSockets(receiver);
+    receiverSockets.forEach((socket) =>
+      socket.emit(RECEIVE_READ_ALL_MESS, { room })
+    );
+
+    await utilTry(
+      messageModel.updateMany({ room, sender: receiver }, { read: true }),
+      "READ_ALL_MESS"
     );
   }
 }
