@@ -1,4 +1,4 @@
-const { SEND_MESS, SEND_TYPING } = require("./events");
+const { SEND_MESS, SEND_TYPING, SEND_READ_ALL_MESS } = require("./events");
 const chatController = require("./chatController");
 
 const configEventListener = (socket) => {
@@ -8,6 +8,10 @@ const configEventListener = (socket) => {
 
   socket.on(SEND_TYPING, (props) => {
     chatController.typing(props);
+  });
+
+  socket.on(SEND_READ_ALL_MESS, (props) => {
+    chatController.readAllMess(props);
   });
 };
 
