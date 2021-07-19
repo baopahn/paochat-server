@@ -8,12 +8,17 @@ const signIn = async (tokenID) => {
   const URL_GG = GG_GET_USER.replace("TOKEN_ID", tokenID);
   const respose = await utilTry(axios.get(URL_GG), "SIGN_IN");
   const userInfo = respose.data;
-  const { email, name: fullName, picture: avatar } = userInfo;
+  const { email, name: fullName, picture } = userInfo;
+  const avatar = picture.replace("s96-c", "s800-c");
+
   let user = await utilTry(userModel.findOne({ email }), "SIGN_IN");
   if (!user) {
     user = new userModel({ email, fullName, avatar });
-    await utilTry(user.save(), "SIGN_IN");
+  } else {
+    user.avatar = avatar;
+    user.fullName = fullName;
   }
+
   const token = signToken({ id: user._id, email, fullName });
   user.refreshToken = token.refreshToken;
   await utilTry(user.save(), "SIGN_IN");

@@ -18,10 +18,10 @@ class ChatController {
 
   async sendMess({ room, sender, receiver, message, idLocal }) {
     const newMess = new messageModel({
+      ...message,
       room,
       sender,
       receiver,
-      message,
       read: false,
     });
     const roomDB = await utilTry(
@@ -41,7 +41,7 @@ class ChatController {
       socket.emit(RECEIVE_MESS, {
         room,
         isSender: false,
-        message: { message, type: "text" },
+        message,
         createdAt: newMess.createdAt,
         idLocal,
       })
@@ -52,7 +52,7 @@ class ChatController {
       socket.emit(RECEIVE_MESS, {
         room,
         isSender: true,
-        message: { message, type: "text" },
+        message,
         createdAt: newMess.createdAt,
         idLocal,
       })
