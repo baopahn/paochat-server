@@ -13,7 +13,6 @@ const indexRouter = require("./components/index");
 const authRouter = require("./components/auth");
 const userRouter = require("./components/user");
 const chatRouter = require("./components/chat");
-const { BASE_URL_CLIENT } = require("./config");
 
 const app = express();
 app.use(cors());
