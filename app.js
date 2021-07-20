@@ -16,7 +16,7 @@ const chatRouter = require("./components/chat");
 const { BASE_URL_CLIENT } = require("./config");
 
 const app = express();
-app.use(cors({ origin: BASE_URL_CLIENT, optionsSuccessStatus: 200 }));
+app.use(cors());
 configPassport();
 connectDB();
 
