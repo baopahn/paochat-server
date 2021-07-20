@@ -36,29 +36,33 @@ class ChatController {
       "CHAT_CONTROLLER"
     );
 
-    const receiverSockets = userController.getSockets(receiver);
-    receiverSockets.forEach((socket) => {
-      if (socket)
-        socket.emit(RECEIVE_MESS, {
-          room,
-          isSender: false,
-          message,
-          createdAt: newMess.createdAt,
-          idLocal,
-        });
-    });
+    try {
+      const receiverSockets = userController.getSockets(receiver);
+      receiverSockets.forEach((socket) => {
+        if (socket)
+          socket.emit(RECEIVE_MESS, {
+            room,
+            isSender: false,
+            message,
+            createdAt: newMess.createdAt,
+            idLocal,
+          });
+      });
 
-    const senderSockets = userController.getSockets(sender);
-    senderSockets.forEach((socket) => {
-      if (socket)
-        socket.emit(RECEIVE_MESS, {
-          room,
-          isSender: true,
-          message,
-          createdAt: newMess.createdAt,
-          idLocal,
-        });
-    });
+      const senderSockets = userController.getSockets(sender);
+      senderSockets.forEach((socket) => {
+        if (socket)
+          socket.emit(RECEIVE_MESS, {
+            room,
+            isSender: true,
+            message,
+            createdAt: newMess.createdAt,
+            idLocal,
+          });
+      });
+    } catch (e) {
+      console.log(e.message);
+    }
   }
 
   typing({ room, receiver, status }) {
