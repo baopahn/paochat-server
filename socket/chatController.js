@@ -78,9 +78,11 @@ class ChatController {
 
   async readAllMess({ room, receiver }) {
     const receiverSockets = userController.getSockets(receiver);
-    receiverSockets.forEach((socket) =>
-      socket.emit(RECEIVE_READ_ALL_MESS, { room })
-    );
+    receiverSockets.forEach((socket) => {
+      if (socket) {
+        socket.emit(RECEIVE_READ_ALL_MESS, { room });
+      }
+    });
 
     await utilTry(
       messageModel.updateMany({ room, sender: receiver }, { read: true }),
