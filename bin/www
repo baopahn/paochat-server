@@ -5,7 +5,7 @@
  */
 
 const app = require("../app");
-const { configSocket } = require("../socket");
+const { configSocket } = require("../src/socket");
 const debug = require("debug")("chatserver:server");
 const http = require("http");
 

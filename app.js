@@ -7,12 +7,12 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { configPassport, checkAuth } = require("./components/auth/passport");
-const { connectDB } = require("./database");
-const indexRouter = require("./components/index");
-const authRouter = require("./components/auth");
-const userRouter = require("./components/user");
-const chatRouter = require("./components/chat");
+const { configPassport, checkAuth } = require("./src/components/auth/passport");
+const { connectDB } = require("./src/database");
+const indexRouter = require("./src/components/index");
+const authRouter = require("./src/components/auth");
+const userRouter = require("./src/components/user");
+const chatRouter = require("./src/components/chat");
 
 const app = express();
 app.use(cors());
@@ -20,7 +20,7 @@ configPassport();
 connectDB();
 
 // view engine setup
-app.set("views", path.join(__dirname, "views"));
+app.set("views", path.join(__dirname, "src", "views"));
 app.set("view engine", "jade");
 
 app.use(logger("dev"));
