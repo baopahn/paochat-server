@@ -1,0 +1,11 @@
+const NEW_MESSAGE = "NEW_MESSAGE";
+const NEW_REACTION = "NEW_REACTION";
+const IS_TYPING = "IS_TYPING";
+const READ_ALL_MESS = "READ_ALL_MESS";
+
+module.exports = {
+  NEW_MESSAGE,
+  NEW_REACTION,
+  IS_TYPING,
+  READ_ALL_MESS,
+};
