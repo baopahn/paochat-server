@@ -1,7 +1,9 @@
-const createResponse = (status, message, data) => ({
-  status,
-  message,
-  data,
-});
+const createResponse = (status, message, data) => {
+  return {
+    status,
+    message,
+    data,
+  };
+};
 
 module.exports = createResponse;

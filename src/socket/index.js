@@ -2,8 +2,8 @@ const socketIO = require("socket.io");
 const { checkAuthSocket, unlockSocket, lockSocket, log } = require("./utils");
 const { BASE_URL_CLIENT } = require("../config");
 const { configEventListener } = require("./eventListener");
-const userController = require("./userController");
 const chatController = require("./chatController");
+const userController = require("./userController");
 
 // Storage io
 let io = null;
@@ -18,8 +18,8 @@ const configSocket = (server) => {
     origins: [`${BASE_URL_CLIENT}`],
   });
 
-  userController.setIO(io);
   chatController.setIO(io);
+  userController.setIO(io);
 
   io.on("connection", setUpNewConnection);
   lockSocket(io);
@@ -37,7 +37,7 @@ const setUpNewConnection = (socket) => {
       unlockSocket(io, socket.id);
       configEventListener(socket);
       socket.emit("authenticated", "Authenticated");
-      userController.addUserSocket(decode.id, socket.id);
+      userController.addUserSocket(socket);
     } else {
       socket.emit("unauthenticated", err.message);
       log(TAG, `${err.message}`);
@@ -48,8 +48,7 @@ const setUpNewConnection = (socket) => {
   socket.on("authenticate", (data) => {
     checkAuthSocket(data.token, callbackAuth);
     socket.on("disconnect", () => {
-      if (socket.auth === true)
-        userController.removeUserSocket(socket.decode.id, socket.id);
+      userController.removeUserSocket(socket);
       log(TAG, `${socket.id} disconnect.`);
     });
   });

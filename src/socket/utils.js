@@ -38,4 +38,9 @@ const log = (tag, message) => {
   console.log(`[${tag}]: ${message}`);
 };
 
-module.exports = { checkAuthSocket, lockSocket, unlockSocket, log };
+module.exports = {
+  checkAuthSocket,
+  lockSocket,
+  unlockSocket,
+  log,
+};

@@ -1,10 +1,8 @@
-const utilTry = require("../utils/utilTry");
-const { messageModel, roomModel } = require("../database");
-const userController = require("./userController");
 const {
-  RECEIVE_MESS,
-  RECEIVE_TYPING,
-  RECEIVE_READ_ALL_MESS,
+  NEW_MESSAGE,
+  IS_TYPING,
+  READ_ALL_MESS,
+  NEW_REACTION,
 } = require("./events");
 
 class ChatController {
@@ -16,80 +14,26 @@ class ChatController {
     this._io = io;
   }
 
-  async sendMess({ room, sender, receiver, message, idLocal }) {
-    const newMess = new messageModel({
-      ...message,
-      room,
-      sender,
-      receiver,
-      read: false,
-    });
-    const roomDB = await utilTry(
-      roomModel.findOne({ _id: room }),
-      "CHAT_CONTROLLER"
-    );
-
-    roomDB.lastMessage = newMess._id;
-    roomDB.updatedAt = newMess.createdAt;
-    await utilTry(
-      Promise.all([newMess.save(), roomDB.save()]),
-      "CHAT_CONTROLLER"
-    );
-
-    try {
-      const receiverSockets = userController.getSockets(receiver);
-      receiverSockets.forEach((socket) => {
-        if (socket)
-          socket.emit(RECEIVE_MESS, {
-            room,
-            isSender: false,
-            message,
-            createdAt: newMess.createdAt,
-            idLocal,
-          });
-      });
-
-      const senderSockets = userController.getSockets(sender);
-      senderSockets.forEach((socket) => {
-        if (socket)
-          socket.emit(RECEIVE_MESS, {
-            room,
-            isSender: true,
-            message,
-            createdAt: newMess.createdAt,
-            idLocal,
-          });
-      });
-    } catch (e) {
-      console.log(e.message);
-    }
+  sendMess(message) {
+    const { roomID } = message;
+    message.status = "receive";
+    this._io.to(roomID).emit(NEW_MESSAGE, message);
   }
 
-  typing({ room, receiver, status }) {
-    const receiverSockets = userController.getSockets(receiver);
-    receiverSockets.forEach((socket) => {
-      if (socket)
-        socket.emit(RECEIVE_TYPING, {
-          room,
-          status,
-        });
-    });
+  sendReaction(reaction) {
+    const { roomID } = reaction;
+    this._io.to(roomID).emit(NEW_REACTION, reaction);
   }
 
-  async readAllMess({ room, receiver }) {
-    const receiverSockets = userController.getSockets(receiver);
-    receiverSockets.forEach((socket) => {
-      if (socket) {
-        socket.emit(RECEIVE_READ_ALL_MESS, { room });
-      }
-    });
+  typing(typing) {
+    const { roomID } = typing;
+    this._io.to(roomID).emit(IS_TYPING, typing);
+  }
 
-    await utilTry(
-      messageModel.updateMany({ room, sender: receiver }, { read: true }),
-      "READ_ALL_MESS"
-    );
+  readAllMess(readAll) {
+    const { roomID } = readAll;
+    this._io.to(roomID).emit(READ_ALL_MESS, readAll);
   }
 }
 const chatController = new ChatController();
-
 module.exports = chatController;

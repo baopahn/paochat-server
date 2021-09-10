@@ -3,9 +3,9 @@ const devEnv = process.env.ENVIRONMENT === "DEV";
 const BASE_URL_CLIENT = devEnv
   ? "http://localhost:3001"
   : process.env.BASE_URL_CLIENT;
-const JWT_TOKEN = "paochat";
+const JWT_TOKEN = "P@0ch@t";
 const JWT_REFRESH_TOKEN = "paochatrefresh";
-const TIME_EXPIRED = "4h";
+const TIME_EXPIRED = "1y";
 const MAX_MESSAGE = 80;
 const STATUS = { SUCCESS: 1, FAIL: -1 };
 const GG_GET_USER =

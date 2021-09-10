@@ -1,119 +1,45 @@
-const { MAX_MESSAGE } = require("../../config");
-const { messageModel, roomModel, userModel } = require("../../database");
+const { conversationModel, userModel } = require("../../database");
+const userController = require("../../socket/userController");
 const utilTry = require("../../utils/utilTry");
 
-const getHistoryChat = async (id) => {
-  const historyChatRaw = await utilTry(
-    await roomModel
-      .find({
-        $or: [
-          { firstUser: id, lastMessage: { $ne: null } },
-          { secondUser: id, lastMessage: { $ne: null } },
-        ],
-      })
-      .sort({ updatedAt: "desc" })
-      .populate("firstUser", "fullName avatar")
-      .populate("secondUser", "fullName avatar")
-      .populate("lastMessage", "-_id message")
-      .select("-__v -createdAt"),
-    "GET_LIST_MESSAGE"
-  );
-
-  const historyChat = historyChatRaw.map((chatRaw) => {
-    const chat = chatRaw.toObject();
-    const friend = chat.firstUser._id == id ? chat.secondUser : chat.firstUser;
-    const { lastMessage } = chat;
-    chat.fullName = friend.fullName;
-    chat.avatar = friend.avatar;
-    chat.lastMessage = lastMessage ? lastMessage.message : "...";
-
-    delete chat.firstUser;
-    delete chat.secondUser;
-    return chat;
-  });
-
-  return historyChat;
-};
-
-const getHistoryMessage = async (id, myID, page) => {
-  const [room, listMessageRaw] = await utilTry(
+const getConversation = async (myID, friendID) => {
+  let [conversation, myAccount, friendAccount] = await utilTry(
     Promise.all([
-      roomModel
-        .findOne({ _id: id })
-        .populate("firstUser", "fullName avatar")
-        .populate("secondUser", "fullName avatar"),
-      messageModel
-        .find({ room: id })
-        .sort({ createdAt: "desc" })
-        .select("-__v -_id -room")
-        .skip((page - 1) * MAX_MESSAGE)
-        .limit(MAX_MESSAGE),
-    ]),
-    "GET_CHAT"
-  );
-
-  const friend = room.firstUser._id == myID ? room.secondUser : room.firstUser;
-
-  if (!listMessageRaw || listMessageRaw.length === 0)
-    return { listMess: [], friend };
-
-  const listMessageShort = [];
-  let length = 0;
-  for (messRaw of listMessageRaw) {
-    const mess = messRaw.toObject();
-    const { message, type, read } = mess;
-    const isSender = mess.sender._id == myID;
-    mess.isSender = isSender;
-    delete mess.sender;
-    delete mess.receiver;
-    delete mess.type;
-    delete mess.read;
-
-    if (length > 0 && mess.isSender === listMessageShort[length - 1].isSender) {
-      listMessageShort[length - 1].message.push({ type, message, read });
-    } else {
-      listMessageShort.push({ ...mess, message: [{ type, message, read }] });
-      length++;
-    }
-  }
-
-  return { listMess: listMessageShort, friend };
-};
-
-const getChatRoom = async (myID, friendID) => {
-  let [room, friend] = await utilTry(
-    Promise.all([
-      roomModel
+      conversationModel
         .findOne({
-          $or: [
-            { firstUser: myID, secondUser: friendID },
-            { firstUser: friendID, secondUser: myID },
+          $and: [
+            { listUsers: { $in: [myID] } },
+            { listUsers: { $in: [friendID] } },
           ],
         })
-        .populate("lastMessage", "-_id message")
-        .select("_id updatedAt"),
-      userModel.findOne({ _id: friendID }).select("_id avatar email fullName"),
+        .populate("listUsers", "_id fullName email avatar")
+        .select("_id listUsers"),
+      userModel.findOne({ _id: myID }).select("_id fullName email avatar"),
+      userModel.findOne({ _id: friendID }).select("_id fullName email avatar"),
     ]),
-    "GET_CHAT_ROOM"
+    "GET_CONVERSATION"
   );
 
-  if (!room) {
-    room = new roomModel({ firstUser: myID, secondUser: friendID });
-    await utilTry(room.save(), "GET_CHAT_ROOM");
+  if (!conversation && friendAccount && myAccount) {
+    conversation = new conversationModel({ listUsers: [myID, friendID] });
+    userController.joinRoom(myID, conversation._id.toString());
+    userController.joinRoom(friendID, conversation._id.toString());
+    await utilTry(conversation.save(), "GET_CONVERSATION");
+    conversation.listUsers = [myAccount, friendAccount];
   }
 
-  const { lastMessage } = room;
-  const roomChat = {
-    _id: room._id,
-    friendID: friend._id,
-    avatar: friend.avatar,
-    email: friend.email,
-    fullName: friend.fullName,
-    updatedAt: room.updatedAt,
-    lastMessage: lastMessage ? lastMessage.message : "",
-  };
+  const conversationO = conversation.toObject();
+  conversationO.roomID = conversationO._id;
+  conversationO.user = friendAccount.toObject();
+  conversationO.user.id = conversationO.user._id;
+  conversationO.myUid = myID;
+  conversationO.lastMessage = null;
 
-  return roomChat;
+  delete conversationO._id;
+  delete conversationO.user._id;
+  delete conversationO.listUsers;
+
+  return conversationO;
 };
 
-module.exports = { getHistoryMessage, getHistoryChat, getChatRoom };
+module.exports = { getConversation };

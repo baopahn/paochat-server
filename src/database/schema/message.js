@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
+const getCurrentDate = require("../../utils/getDateNow");
 
 module.exports = mongoose.model(
   "Message",
   new mongoose.Schema({
-    room: { type: mongoose.ObjectId, ref: "Room", required: true },
-    sender: { type: mongoose.ObjectId, ref: "User", required: true },
-    receiver: { type: mongoose.ObjectId, ref: "User", required: true },
+    roomID: { type: mongoose.ObjectId, ref: "Conversation", required: true },
+    fromUid: { type: mongoose.ObjectId, ref: "User", required: true },
+    toUid: { type: mongoose.ObjectId, ref: "User", required: true },
     message: { type: String, default: "", required: true },
     type: { type: String, default: "text", required: true },
-    read: { type: Boolean, default: true },
-    createdAt: { type: Date, default: Date.now },
+    status: { type: String, default: "sending", required: true },
+    reply: { type: mongoose.ObjectId, ref: "Message", required: true },
+    createdAt: { type: Number, default: getCurrentDate },
   })
 );
 

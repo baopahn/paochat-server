@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const getCurrentDate = require("../../utils/getDateNow");
 
 module.exports = mongoose.model(
   "User",
@@ -7,6 +8,6 @@ module.exports = mongoose.model(
     email: { type: String, default: "", required: true },
     avatar: { type: String, default: "", required: true },
     refreshToken: { type: String, default: "" },
-    createdAt: { type: Date, default: Date.now },
+    createdAt: { type: Date, default: getCurrentDate },
   })
 );
